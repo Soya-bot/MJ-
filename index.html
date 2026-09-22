@@ -97,15 +97,22 @@
 
         /* ============ 拼图排版控制台专用样式 ============ */
         .puzzle-layout { display: flex; flex: 1; gap: 20px; overflow: hidden; }
-        .puzzle-controls { width: 330px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+        .puzzle-controls { width: 350px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
         .puzzle-preview { flex: 1; background: #e9ecef; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 20px; overflow-y: auto; }
         .control-panel-title { font-size: 14px; font-weight: bold; margin-top: 5px; margin-bottom: 5px; color: var(--text-main); border-bottom: 1px solid var(--border); padding-bottom: 5px; }
-        .control-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 8px; }
-        .control-row input[type="number"] { width: 60px; padding: 4px; border: 1px solid var(--border); border-radius: 4px; text-align: center; }
-        .control-row select { flex: 1; padding: 6px; border: 1px solid var(--border); border-radius: 4px; margin-left: 10px; }
-        .control-row input[type="range"] { flex: 1; margin-left: 10px; }
         
-        /* 专为拼图导入写的标签按钮，绝对显示 */
+        .control-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 6px; }
+        .control-row label { min-width: 60px; }
+        .control-row input[type="number"] { width: 55px; padding: 4px; border: 1px solid var(--border); border-radius: 4px; text-align: center; }
+        .control-row select { flex: 1; padding: 4px; border: 1px solid var(--border); border-radius: 4px; margin-left: 5px; font-size: 12px; }
+        .control-row input[type="range"] { flex: 1; margin-left: 5px; }
+        .control-row input[type="color"] { width: 30px; height: 26px; padding: 2px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; margin-left: 5px; }
+        .control-row input[type="checkbox"] { margin-right: 5px; }
+        
+        .sub-control-row { display: flex; gap: 8px; align-items: center; font-size: 12px; margin-bottom: 6px; flex-wrap: wrap; }
+        .sub-control-row label { display: flex; align-items: center; gap: 3px; }
+
+        /* 专为拼图导入写的标签按钮 */
         .puzzle-upload-label { display: block; width: 100%; text-align: center; padding: 12px; font-size: 15px; cursor: pointer; box-sizing: border-box; border-radius: 6px; background: var(--primary); color: #fff; margin-bottom: 10px; transition: 0.2s; font-weight: 500; }
         .puzzle-upload-label:hover { opacity: 0.9; }
 
@@ -113,9 +120,9 @@
         .puzzle-item { position: relative; background: #f0f0f0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .puzzle-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
         
-        .overlay-text { position: absolute; color: #fff; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); font-size: 14px; font-weight: bold; padding: 4px; pointer-events: none; z-index: 10; }
-        .overlay-index { position: absolute; color: #fff; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); font-size: 16px; font-weight: bold; padding: 4px; pointer-events: none; z-index: 10; }
-        .watermark-overlay { position: absolute; bottom: 10px; right: 10px; color: #ffffff; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); pointer-events: none; z-index: 10; }
+        /* 文字叠加样式 */
+        .overlay-text { position: absolute; pointer-events: none; z-index: 10; white-space: nowrap; }
+        .watermark-overlay { position: absolute; bottom: 10px; right: 10px; color: #ffffff; pointer-events: none; z-index: 10; white-space: nowrap; }
 
         .empty-state { text-align: center; color: var(--text-sub); padding: 50px; display: none; }
         
@@ -147,7 +154,6 @@
     </div>
 
     <div class="main-content">
-        <!-- P值库视图 -->
         <div id="view-p库" class="view-container active">
             <div class="header-bar">
                 <div class="header-title" id="p-view-title">全部 P 值</div>
@@ -159,7 +165,6 @@
             <div class="empty-state" id="empty-state">暂无数据，点击右上角添加吧~</div>
         </div>
 
-        <!-- 词包库视图 -->
         <div id="view-词包库" class="view-container" style="display: none;">
             <div class="header-bar">
                 <div class="header-title" id="w-view-title">词包库</div>
@@ -171,7 +176,6 @@
             <div class="empty-state" id="word-empty-state">暂无词包，点击右上角创建吧~</div>
         </div>
 
-        <!-- 拼图排版视图 -->
         <div id="view-拼图排版" class="view-container" style="display: none; flex-direction: column; height: 100%;">
             <div class="header-bar">
                 <div class="header-title">排版控制台</div>
@@ -184,26 +188,71 @@
             <div class="puzzle-layout">
                 <div class="puzzle-controls">
                     <div class="control-panel-title">素材导入</div>
-                    
-                    <!-- 修复：使用 label 确保导入按钮100%显示并可点击 -->
                     <label class="puzzle-upload-label">
                         📁 从本地相册导入图片 (可多选)
                         <input type="file" id="local-img-upload" accept="image/*" multiple onchange="handleLocalImageUpload(event)" style="display:none;">
                     </label>
 
-                    <div class="control-panel-title" style="margin-top: 10px;">排版引擎</div>
-                    <div class="control-row"><select id="layout-engine" onchange="renderPuzzle()"><option value="waterfall">动态瀑布流 (原图比例，不裁剪)</option><option value="grid">经典等比宫格 (整齐划一)</option></select></div>
+                    <div class="control-panel-title" style="margin-top: 5px;">排版引擎</div>
+                    <div class="control-row">
+                        <select id="layout-engine" onchange="renderPuzzle()">
+                            <option value="waterfall">动态瀑布流 (原图比例，不裁剪)</option>
+                            <option value="grid">经典等比宫格 (整齐划一)</option>
+                        </select>
+                    </div>
                     <div class="control-row"><label>指定列数</label><input type="number" id="col-count" value="3" min="1" max="6" onchange="renderPuzzle()"></div>
-                    <div class="control-row"><label>图片间距 (px)</label><input type="number" id="img-gap" value="10" min="0" max="50" onchange="renderPuzzle()"></div>
-                    <div class="control-panel-title" style="margin-top: 10px;">文字叠加</div>
-                    <div class="control-row"><label>显示序号</label><input type="checkbox" id="show-index" checked onchange="renderPuzzle()"><select id="index-pos" onchange="renderPuzzle()"><option value="top-left">左上</option><option value="top-right">右上</option><option value="bottom-left">左下</option><option value="bottom-right">右下</option></select></div>
-                    <div class="control-row"><label>显示标价</label><input type="checkbox" id="show-price" onchange="renderPuzzle()"><input type="text" id="price-text" placeholder="价格" style="width: 50px; padding: 4px;" onchange="renderPuzzle()"><select id="price-pos" onchange="renderPuzzle()"><option value="bottom-right">右下</option><option value="bottom-left">左下</option><option value="top-right">右上</option><option value="top-left">左上</option></select></div>
+                    <div class="control-row"><label>图片间距(px)</label><input type="number" id="img-gap" value="10" min="0" max="50" onchange="renderPuzzle()"></div>
+
+                    <!-- 序号控制区 (完整增强版) -->
+                    <div class="control-panel-title" style="margin-top: 10px;">序号设置</div>
+                    <div class="control-row">
+                        <label><input type="checkbox" id="show-index" checked onchange="renderPuzzle()"> 启用序号</label>
+                        <select id="index-pos" onchange="renderPuzzle()">
+                            <option value="top-left">左上</option>
+                            <option value="top-center">中上</option>
+                            <option value="top-right">右上</option>
+                            <option value="bottom-left">左下</option>
+                            <option value="bottom-center">中下</option>
+                            <option value="bottom-right">右下</option>
+                        </select>
+                    </div>
+                    <div class="sub-control-row">
+                        <label>字号 <input type="number" id="index-size" value="24" min="8" max="100" style="width:40px; padding:2px;" onchange="renderPuzzle()"></label>
+                        <label>颜色 <input type="color" id="index-color" value="#ffffff" onchange="renderPuzzle()"></label>
+                        <label><input type="checkbox" id="index-stroke" onchange="renderPuzzle()"> 描边</label>
+                        <label>描边色 <input type="color" id="index-stroke-color" value="#000000" onchange="renderPuzzle()"></label>
+                        <label><input type="checkbox" id="index-glow" onchange="renderPuzzle()"> 微光</label>
+                    </div>
+
+                    <!-- 标价控制区 (完整增强版) -->
+                    <div class="control-panel-title" style="margin-top: 10px;">标价设置</div>
+                    <div class="control-row">
+                        <label><input type="checkbox" id="show-price" onchange="renderPuzzle()"> 启用标价</label>
+                        <input type="text" id="price-text" placeholder="输入价格" style="width: 60px; padding: 4px;" onchange="renderPuzzle()">
+                        <select id="price-pos" onchange="renderPuzzle()">
+                            <option value="bottom-right">右下</option>
+                            <option value="bottom-left">左下</option>
+                            <option value="bottom-center">中下</option>
+                            <option value="top-right">右上</option>
+                            <option value="top-left">左上</option>
+                            <option value="top-center">中上</option>
+                        </select>
+                    </div>
+                    <div class="sub-control-row">
+                        <label>字号 <input type="number" id="price-size" value="18" min="8" max="100" style="width:40px; padding:2px;" onchange="renderPuzzle()"></label>
+                        <label>颜色 <input type="color" id="price-color" value="#ffffff" onchange="renderPuzzle()"></label>
+                        <label><input type="checkbox" id="price-stroke" onchange="renderPuzzle()"> 描边</label>
+                        <label>描边色 <input type="color" id="price-stroke-color" value="#000000" onchange="renderPuzzle()"></label>
+                        <label><input type="checkbox" id="price-glow" onchange="renderPuzzle()"> 微光</label>
+                    </div>
+
                     <div class="control-panel-title" style="margin-top: 10px;">全图水印附着</div>
-                    <div class="control-row"><label>开启水印</label><input type="checkbox" id="show-watermark" onchange="renderPuzzle()"></div>
+                    <div class="control-row"><label><input type="checkbox" id="show-watermark" onchange="renderPuzzle()"> 开启水印</label></div>
                     <div class="control-row"><input type="text" id="watermark-text" placeholder="输入水印文字" value="© 我的灵感库" style="width: 100%; padding: 6px;" onchange="renderPuzzle()"></div>
                     <div class="control-row"><label>水印大小</label><input type="number" id="watermark-size" value="16" min="8" max="60" onchange="renderPuzzle()"></div>
                     <div class="control-row"><label>水印透明度</label><input type="range" id="watermark-opacity" min="0" max="1" step="0.1" value="0.6" onchange="renderPuzzle()"><span id="wm-opacity-val" style="margin-left: 5px; width: 30px;">60%</span></div>
                 </div>
+
                 <div class="puzzle-preview" id="puzzle-preview-area">
                     <p style="font-size: 13px; color: #888; margin-bottom: 10px;">实时预览区（请先点击左侧“从本地相册导入图片”）</p>
                     <div id="puzzle-container"></div>
@@ -211,7 +260,6 @@
             </div>
         </div>
 
-        <!-- 数据管理视图 -->
         <div id="view-数据管理" class="view-container" style="display: none;">
             <div class="data-manager-box">
                 <h2>本地数据安全备份</h2>
@@ -285,11 +333,8 @@
         }
 
         function saveData() {
-            try {
-                localStorage.setItem('pValueToolDataV3', JSON.stringify(state));
-            } catch (e) {
-                alert('数据保存失败！可能是因为选择的本地图片过大，超出了浏览器的存储限制。建议使用压缩后的图片。');
-            }
+            try { localStorage.setItem('pValueToolDataV3', JSON.stringify(state)); } 
+            catch (e) { alert('数据保存失败！可能是因为选择的本地图片过大，超出了浏览器的存储限制。建议使用压缩后的图片。'); }
             renderAll();
         }
 
@@ -338,29 +383,104 @@
             });
         }
 
+        // 拼图核心渲染逻辑 (全面支持新功能)
         function renderPuzzle() {
-            const container = document.getElementById('puzzle-container'); const engine = document.getElementById('layout-engine').value;
-            const cols = parseInt(document.getElementById('col-count').value) || 3; const gap = parseInt(document.getElementById('img-gap').value) || 10;
-            const showIndex = document.getElementById('show-index').checked; const indexPos = document.getElementById('index-pos').value;
-            const showPrice = document.getElementById('show-price').checked; const priceText = document.getElementById('price-text').value; const pricePos = document.getElementById('price-pos').value;
-            const showWatermark = document.getElementById('show-watermark').checked; const watermarkText = document.getElementById('watermark-text').value;
-            const watermarkSize = document.getElementById('watermark-size').value; const watermarkOpacity = document.getElementById('watermark-opacity').value;
+            const container = document.getElementById('puzzle-container');
+            const engine = document.getElementById('layout-engine').value;
+            const cols = parseInt(document.getElementById('col-count').value) || 3;
+            const gap = parseInt(document.getElementById('img-gap').value) || 10;
+            
+            // 获取所有文字样式参数
+            const showIndex = document.getElementById('show-index').checked;
+            const indexPos = document.getElementById('index-pos').value;
+            const indexSize = document.getElementById('index-size').value;
+            const indexColor = document.getElementById('index-color').value;
+            const indexStroke = document.getElementById('index-stroke').checked;
+            const indexStrokeColor = document.getElementById('index-stroke-color').value;
+            const indexGlow = document.getElementById('index-glow').checked;
+
+            const showPrice = document.getElementById('show-price').checked;
+            const priceText = document.getElementById('price-text').value;
+            const pricePos = document.getElementById('price-pos').value;
+            const priceSize = document.getElementById('price-size').value;
+            const priceColor = document.getElementById('price-color').value;
+            const priceStroke = document.getElementById('price-stroke').checked;
+            const priceStrokeColor = document.getElementById('price-stroke-color').value;
+            const priceGlow = document.getElementById('price-glow').checked;
+
+            const showWatermark = document.getElementById('show-watermark').checked;
+            const watermarkText = document.getElementById('watermark-text').value;
+            const watermarkSize = document.getElementById('watermark-size').value;
+            const watermarkOpacity = document.getElementById('watermark-opacity').value;
             document.getElementById('wm-opacity-val').innerText = Math.round(watermarkOpacity * 100) + '%';
-            container.style.gap = gap + 'px'; container.innerHTML = '';
+
+            container.style.gap = gap + 'px';
+            container.innerHTML = '';
             
             if (puzzleImages.length === 0) { container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 40px;">素材池为空，请点击左侧“从本地相册导入图片”。</div>'; return; }
             container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+            // 通用的样式生成函数
+            function getTextStyle(size, color, stroke, strokeColor, glow) {
+                let style = `font-size: ${size}px; color: ${color}; font-weight: bold; `;
+                // html2canvas 对 -webkit-text-stroke 支持不佳，使用 text-shadow 模拟描边
+                if (stroke) {
+                    style += `text-shadow: 1px 1px 0 ${strokeColor}, -1px -1px 0 ${strokeColor}, 1px -1px 0 ${strokeColor}, -1px 1px 0 ${strokeColor}; `;
+                }
+                if (glow) {
+                    style += `filter: drop-shadow(0 0 5px ${color}); `;
+                }
+                if (!stroke && !glow) {
+                    style += `text-shadow: 1px 1px 3px rgba(0,0,0,0.8); `; // 默认阴影保证白色文字在浅色背景下可见
+                }
+                return style;
+            }
+
+            // 通用的位置样式函数
+            function setPosition(el, pos) {
+                el.style.top = 'auto'; el.style.bottom = 'auto'; el.style.left = 'auto'; el.style.right = 'auto'; el.style.transform = 'none';
+                if (pos === 'top-left') { el.style.top = '5px'; el.style.left = '5px'; }
+                else if (pos === 'top-center') { el.style.top = '5px'; el.style.left = '50%'; el.style.transform = 'translateX(-50%)'; }
+                else if (pos === 'top-right') { el.style.top = '5px'; el.style.right = '5px'; }
+                else if (pos === 'bottom-left') { el.style.bottom = '5px'; el.style.left = '5px'; }
+                else if (pos === 'bottom-center') { el.style.bottom = '5px'; el.style.left = '50%'; el.style.transform = 'translateX(-50%)'; }
+                else if (pos === 'bottom-right') { el.style.bottom = '5px'; el.style.right = '5px'; }
+            }
+
             puzzleImages.forEach((imgUrl, index) => {
                 const item = document.createElement('div'); item.className = 'puzzle-item'; item.style.aspectRatio = engine === 'grid' ? '1/1' : 'auto'; 
                 const img = document.createElement('img'); img.src = imgUrl; item.appendChild(img);
-                if (showIndex) { const indexEl = document.createElement('div'); indexEl.className = 'overlay-index'; indexEl.innerText = (index + 1); indexEl.style.fontSize = '20px'; if (indexPos === 'top-left') { indexEl.style.top = '5px'; indexEl.style.left = '5px'; } else if (indexPos === 'top-right') { indexEl.style.top = '5px'; indexEl.style.right = '5px'; } else if (indexPos === 'bottom-left') { indexEl.style.bottom = '5px'; indexEl.style.left = '5px'; } else { indexEl.style.bottom = '5px'; indexEl.style.right = '5px'; } item.appendChild(indexEl); }
-                if (showPrice && priceText) { const priceEl = document.createElement('div'); priceEl.className = 'overlay-text'; priceEl.innerText = priceText; if (pricePos === 'top-left') { priceEl.style.top = '5px'; priceEl.style.left = '5px'; } else if (pricePos === 'top-right') { priceEl.style.top = '5px'; priceEl.style.right = '5px'; } else if (pricePos === 'bottom-left') { priceEl.style.bottom = '5px'; priceEl.style.left = '5px'; } else { priceEl.style.bottom = '5px'; priceEl.style.right = '5px'; } item.appendChild(priceEl); }
-                if (showWatermark && watermarkText) { const wm = document.createElement('div'); wm.className = 'watermark-overlay'; wm.innerText = watermarkText; wm.style.fontSize = watermarkSize + 'px'; wm.style.opacity = watermarkOpacity; item.appendChild(wm); }
+
+                // 序号叠加
+                if (showIndex) {
+                    const indexEl = document.createElement('div'); 
+                    indexEl.className = 'overlay-text'; 
+                    indexEl.innerText = (index + 1);
+                    indexEl.style.cssText += getTextStyle(indexSize, indexColor, indexStroke, indexStrokeColor, indexGlow);
+                    setPosition(indexEl, indexPos);
+                    item.appendChild(indexEl);
+                }
+
+                // 标价叠加
+                if (showPrice && priceText) {
+                    const priceEl = document.createElement('div'); 
+                    priceEl.className = 'overlay-text'; 
+                    priceEl.innerText = priceText;
+                    priceEl.style.cssText += getTextStyle(priceSize, priceColor, priceStroke, priceStrokeColor, priceGlow);
+                    setPosition(priceEl, pricePos);
+                    item.appendChild(priceEl);
+                }
+
+                // 水印
+                if (showWatermark && watermarkText) {
+                    const wm = document.createElement('div'); wm.className = 'watermark-overlay';
+                    wm.innerText = watermarkText; wm.style.fontSize = watermarkSize + 'px'; wm.style.opacity = watermarkOpacity;
+                    item.appendChild(wm);
+                }
                 container.appendChild(item);
             });
         }
 
-        // 拼图多选上传
         function handleLocalImageUpload(event) {
             const files = event.target.files; if (!files || files.length === 0) return;
             let loadedCount = 0; const totalFiles = files.length;
@@ -386,7 +506,6 @@
             else if (viewName === '数据管理') { document.getElementById('view-数据管理').style.display = 'block'; }
         }
 
-        // P值 本地上传
         function openCardModal(id = null) { 
             const modal = document.getElementById('cardModal'); const title = document.getElementById('modal-title');
             const inputId = document.getElementById('card-id'); const inputName = document.getElementById('card-name');
@@ -437,7 +556,6 @@
             navigator.clipboard.writeText(texts.join('\n')).then(() => alert('已复制全部P值代码')).catch(err => alert('复制失败'));
         }
 
-        // 词包 本地上传
         function openWordModal(id = null) {
             const modal = document.getElementById('wordModal'); const title = document.getElementById('word-modal-title');
             const inputId = document.getElementById('word-id'); const inputTitle = document.getElementById('word-title');
