@@ -30,7 +30,7 @@
 
         /* 左侧边栏 */
         .sidebar { width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 0; overflow-y: auto; transition: transform 0.3s ease; z-index: 1000; flex-shrink: 0; }
-        .sidebar.hidden { transform: translateX(-100%); margin-right: -260px; /* 配合flex布局隐藏 */ }
+        .sidebar.hidden { transform: translateX(-100%); margin-right: -260px; }
         
         .sidebar h2 { font-size: 16px; padding: 0 20px 20px; color: var(--text-main); font-weight: bold; }
         .menu-item { padding: 12px 20px; font-size: 14px; color: var(--text-main); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
@@ -40,9 +40,16 @@
         .category-group { margin-bottom: 15px; border-top: 1px solid var(--border); padding-top: 10px; }
         .category-title { font-size: 12px; color: var(--text-sub); padding: 10px 20px 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         .btn-add-cat { font-size: 11px; background: none; border: 1px solid var(--primary); color: var(--primary); cursor: pointer; border-radius: 4px; padding: 2px 6px; }
-        .category-item { padding: 8px 20px 8px 30px; font-size: 13px; color: var(--text-main); cursor: pointer; transition: 0.2s; }
+        
+        /* 分类项样式 */
+        .category-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px 8px 30px; font-size: 13px; color: var(--text-main); cursor: pointer; transition: 0.2s; }
         .category-item:hover { background: #f3f4f6; color: var(--primary); }
         .category-item.active { color: var(--primary); font-weight: bold; }
+        .category-item .cat-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .category-item .cat-actions { display: flex; gap: 8px; opacity: 0; transition: 0.2s; }
+        .category-item:hover .cat-actions { opacity: 1; }
+        .cat-action-btn { font-size: 12px; cursor: pointer; background: none; border: none; padding: 2px; }
+        .cat-action-btn:hover { transform: scale(1.2); }
 
         /* 右侧主内容 */
         .main-content { flex: 1; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; transition: margin-left 0.3s ease; }
@@ -88,7 +95,6 @@
         .item-row:last-child { margin-bottom: 0; border-bottom: none; }
         .item-top { display: flex; gap: 8px; align-items: center; }
         
-        /* P值和词包本地上传样式 */
         .local-img-upload { flex: 1; padding: 6px; border: 1px dashed #ccc; border-radius: 4px; background: #fff; font-size: 12px; cursor: pointer; }
         .img-preview { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; display: none; border: 1px solid #ddd; }
         
@@ -124,30 +130,22 @@
         .sub-control-row { display: flex; gap: 8px; align-items: center; font-size: 12px; margin-bottom: 6px; flex-wrap: wrap; }
         .sub-control-row label { display: flex; align-items: center; gap: 3px; }
 
-        /* 专为拼图导入写的标签按钮 */
         .puzzle-upload-label { display: block; width: 100%; text-align: center; padding: 12px; font-size: 15px; cursor: pointer; box-sizing: border-box; border-radius: 6px; background: var(--primary); color: #fff; margin-bottom: 10px; transition: 0.2s; font-weight: 500; }
         .puzzle-upload-label:hover { opacity: 0.9; }
 
-        /* 分页容器 */
         .puzzle-page { margin-bottom: 20px; background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 1000px; }
         
-        /* 各种排版引擎的布局 */
         .puzzle-grid { display: grid; gap: 10px; }
         .layout-grid { display: grid; gap: 10px; }
         .layout-poster12 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
         .layout-poster9 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .layout-long { display: grid; grid-template-columns: 1fr; gap: 0; }
 
-        /* 图片项目样式 */
         .puzzle-item { position: relative; background: #f0f0f0; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid transparent; transition: 0.1s; }
         .puzzle-item.selected { border: 3px solid var(--primary); box-shadow: 0 0 0 2px rgba(91, 124, 250, 0.3); z-index: 5; }
         .puzzle-item img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
-        .puzzle-item.crop-auto img { width: 100%; height: auto; object-fit: contain; } 
         
-        /* 文字叠加样式 */
         .overlay-text { position: absolute; pointer-events: none; z-index: 10; white-space: nowrap; font-weight: bold; }
-        
-        /* 水印图片样式 */
         .watermark-img { position: absolute; z-index: 10; object-fit: fill; user-select: none; -webkit-user-drag: none; }
 
         .empty-state { text-align: center; color: var(--text-sub); padding: 50px; display: none; }
@@ -159,45 +157,29 @@
         .btn-export { background: #5b7cfa; color: #fff; padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 15px; }
         .btn-import { background: #10b981; color: #fff; padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 15px; }
 
-        /* ============ 移动端适配 (响应式侧栏) ============ */
+        /* ============ 移动端适配 ============ */
         @media (max-width: 768px) {
             body { display: block; }
-            
-            /* 侧边栏变为固定的侧滑抽屉 */
             .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: 280px; transform: translateX(-100%); box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
             .sidebar.hidden { transform: translateX(-100%); margin-right: 0; }
-
-            /* 显示汉堡菜单按钮 */
             .menu-toggle { display: block; }
-            
-            /* 主内容区占据满宽 */
-            .main-content { width: 100%; padding: 15px; padding-top: 60px; /* 留出菜单按钮的空间 */ }
-            
-            /* 标题栏适配 */
+            .main-content { width: 100%; padding: 15px; padding-top: 60px; }
             .header-bar { flex-direction: column; align-items: flex-start; gap: 10px; }
             .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
             .header-actions .btn { flex: 1; white-space: nowrap; }
-            
-            /* 拼图控制台改为上下布局 */
             .puzzle-layout { flex-direction: column; overflow-y: auto; }
             .puzzle-controls { width: 100%; max-height: none; }
             .puzzle-preview { width: 100%; min-height: 400px; }
-            
-            /* 卡片网格单列 */
             .cards-grid { grid-template-columns: 1fr; }
-            
-            /* 模态框宽度适应 */
             .modal { width: 95%; max-width: 95%; }
+            .category-item .cat-actions { opacity: 1; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 移动端侧栏遮罩 -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-    
-    <!-- 菜单切换按钮 -->
     <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">☰ 菜单</button>
 
     <div class="sidebar" id="sidebar">
@@ -423,31 +405,25 @@
     </div>
 
     <script>
-        // --- 响应式侧栏控制逻辑 ---
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
             sidebar.classList.toggle('active');
-            // 如果是桌面端折叠（无遮罩），或者移动端打开
             if (window.innerWidth <= 768) {
                 if (sidebar.classList.contains('active')) overlay.classList.add('active');
                 else overlay.classList.remove('active');
             } else {
-                // 桌面端
                 if (sidebar.classList.contains('active')) sidebar.classList.remove('hidden');
                 else sidebar.classList.add('hidden');
             }
         }
 
-        // 初始化：如果在桌面端，侧栏默认显示（移除hidden）
-        // 如果在移动端，侧栏默认隐藏（移除active）
         window.addEventListener('resize', () => {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
             if (window.innerWidth > 768) {
                 sidebar.classList.remove('active');
                 overlay.classList.remove('active');
-                // 确保桌面端不会被隐藏
             } else {
                 sidebar.classList.remove('hidden');
                 sidebar.classList.remove('active');
@@ -455,10 +431,8 @@
             }
         });
 
-        // 页面加载时初始化侧栏状态
         window.dispatchEvent(new Event('resize'));
 
-        // --- 原有逻辑 ---
         let state = { pCategories: [{ id: 'default_p', name: '默认P值分类' }], wCategories: [{ id: 'default_w', name: '默认词包分类' }], pCards: [], wCards: [] };
         let puzzleImages = [];
         let selectedPuzzleIndices = new Set();
@@ -491,13 +465,90 @@
 
         function renderAll() { renderCategories(); renderCards(); renderWords(); renderPuzzle(); }
 
+        // --- 渲染分类 (限制默认分类的重命名和删除) ---
         function renderCategories() {
+            // P值分类
             const pCatList = document.getElementById('p-category-list'); pCatList.innerHTML = '';
-            state.pCategories.forEach(cat => { const div = document.createElement('div'); div.className = 'category-item'; div.innerHTML = `📂 ${cat.name}`; div.onclick = () => renderCards(cat.id); pCatList.appendChild(div); });
+            state.pCategories.forEach(cat => {
+                const div = document.createElement('div'); div.className = 'category-item';
+                let actionHtml = '';
+                // 核心逻辑：如果是默认分类，不渲染操作按钮
+                if (cat.id !== 'default_p') {
+                    actionHtml = `
+                        <span class="cat-actions">
+                            <button class="cat-action-btn" onclick="renameCategory('p', '${cat.id}', event)" title="重命名">✏️</button>
+                            <button class="cat-action-btn" onclick="deleteCategory('p', '${cat.id}', event)" title="删除">🗑️</button>
+                        </span>
+                    `;
+                }
+                div.innerHTML = `
+                    <span class="cat-name">📂 ${cat.name}</span>
+                    ${actionHtml}
+                `;
+                div.onclick = (e) => { e.stopPropagation(); renderCards(cat.id); };
+                pCatList.appendChild(div);
+            });
+
+            // 词包分类
             const wCatList = document.getElementById('w-category-list'); wCatList.innerHTML = '';
-            state.wCategories.forEach(cat => { const div = document.createElement('div'); div.className = 'category-item'; div.innerHTML = `📂 ${cat.name}`; div.onclick = () => renderWords(cat.id); wCatList.appendChild(div); });
+            state.wCategories.forEach(cat => {
+                const div = document.createElement('div'); div.className = 'category-item';
+                let actionHtml = '';
+                // 核心逻辑：如果是默认分类，不渲染操作按钮
+                if (cat.id !== 'default_w') {
+                    actionHtml = `
+                        <span class="cat-actions">
+                            <button class="cat-action-btn" onclick="renameCategory('w', '${cat.id}', event)" title="重命名">✏️</button>
+                            <button class="cat-action-btn" onclick="deleteCategory('w', '${cat.id}', event)" title="删除">🗑️</button>
+                        </span>
+                    `;
+                }
+                div.innerHTML = `
+                    <span class="cat-name">📂 ${cat.name}</span>
+                    ${actionHtml}
+                `;
+                div.onclick = (e) => { e.stopPropagation(); renderWords(cat.id); };
+                wCatList.appendChild(div);
+            });
+
             const select = document.getElementById('card-category'); select.innerHTML = '';
             state.pCategories.forEach(cat => { const option = document.createElement('option'); option.value = cat.id; option.textContent = cat.name; select.appendChild(option); });
+        }
+
+        // --- 重命名分类 (保护默认分类) ---
+        function renameCategory(type, id, event) {
+            event.stopPropagation();
+            if (id === 'default_p' || id === 'default_w') return alert('默认分类不能重命名！');
+            
+            const list = type === 'p' ? state.pCategories : state.wCategories;
+            const cat = list.find(c => c.id === id);
+            if (!cat) return;
+            
+            const newName = prompt('请输入新的分类名称:', cat.name);
+            if (newName === null) return;
+            const trimmedName = newName.trim();
+            if (!trimmedName) return alert('分类名不能为空');
+            if (list.some(c => c.name === trimmedName && c.id !== id)) return alert('该分类名已存在');
+
+            cat.name = trimmedName;
+            saveData();
+        }
+
+        // --- 删除分类 (保护默认分类) ---
+        function deleteCategory(type, id, event) {
+            event.stopPropagation();
+            if (id === 'default_p' || id === 'default_w') return alert('默认分类不能删除！');
+            
+            if (!confirm('确定要删除这个分类吗？该分类下的所有卡片将自动移动到“默认分类”。')) return;
+
+            if (type === 'p') {
+                state.pCategories = state.pCategories.filter(c => c.id !== id);
+                state.pCards.forEach(card => { if (card.categoryId === id) card.categoryId = 'default_p'; });
+            } else {
+                state.wCategories = state.wCategories.filter(c => c.id !== id);
+                state.wCards.forEach(word => { if (word.categoryId === id) word.categoryId = 'default_w'; });
+            }
+            saveData();
         }
 
         function renderCards(filterCatId = null) {
@@ -841,7 +892,6 @@
             if (viewName === '拼图排版') { document.getElementById('view-拼图排版').style.display = 'flex'; toggleLayoutSettings(); renderPuzzle(); }
             else if (viewName === '数据管理') { document.getElementById('view-数据管理').style.display = 'block'; }
             
-            // 移动端点击菜单后自动收起
             if (window.innerWidth <= 768) {
                 document.getElementById('sidebar').classList.remove('active');
                 document.getElementById('sidebarOverlay').classList.remove('active');
