@@ -14,6 +14,7 @@
             --text-main: #333;
             --text-sub: #888;
             --border: #e5e7eb;
+            --danger: #ef4444;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
@@ -45,6 +46,8 @@
         .btn-primary:hover { opacity: 0.9; }
         .btn-secondary { background: #fff; border: 1px solid var(--border); color: var(--text-main); }
         .btn-secondary:hover { background: #f9fafb; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-danger:hover { opacity: 0.9; }
 
         /* 卡片网格 */
         .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
@@ -83,7 +86,7 @@
         .item-bottom { display: flex; gap: 8px; align-items: flex-start; }
         .item-bottom textarea { flex: 1; padding: 8px 10px; font-size: 13px; resize: vertical; min-height: 40px; }
 
-        .btn-del-item { background: none; border: none; cursor: pointer; color: #ef4444; font-size: 16px; padding: 5px; }
+        .btn-del-item { background: none; border: none; cursor: pointer; color: var(--danger); font-size: 16px; padding: 5px; }
         .btn-add-item { background: none; border: 1px dashed var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; width: 100%; margin-top: 5px; transition: 0.2s; }
         .btn-add-item:hover { background: var(--primary-light); }
 
@@ -97,7 +100,7 @@
 
         /* ============ 拼图排版控制台专用样式 ============ */
         .puzzle-layout { display: flex; flex: 1; gap: 20px; overflow: hidden; }
-        .puzzle-controls { width: 350px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+        .puzzle-controls { width: 360px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
         .puzzle-preview { flex: 1; background: #e9ecef; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 20px; overflow-y: auto; }
         .control-panel-title { font-size: 14px; font-weight: bold; margin-top: 5px; margin-bottom: 5px; color: var(--text-main); border-bottom: 1px solid var(--border); padding-bottom: 5px; }
         
@@ -116,12 +119,29 @@
         .puzzle-upload-label { display: block; width: 100%; text-align: center; padding: 12px; font-size: 15px; cursor: pointer; box-sizing: border-box; border-radius: 6px; background: var(--primary); color: #fff; margin-bottom: 10px; transition: 0.2s; font-weight: 500; }
         .puzzle-upload-label:hover { opacity: 0.9; }
 
-        #puzzle-container { display: grid; gap: 10px; width: 100%; max-width: 1000px; background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .puzzle-item { position: relative; background: #f0f0f0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .puzzle-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        /* 分页容器 */
+        .puzzle-page { margin-bottom: 20px; background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 1000px; }
+        
+        /* 各种排版引擎的布局 */
+        .puzzle-grid { display: grid; gap: 10px; }
+        .layout-grid { display: grid; gap: 10px; }
+        .layout-poster12 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+        .layout-poster9 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .layout-long { display: grid; grid-template-columns: 1fr; gap: 0; }
+
+        /* 图片项目样式 */
+        .puzzle-item { position: relative; background: #f0f0f0; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid transparent; transition: 0.1s; }
+        .puzzle-item.selected { border: 3px solid var(--primary); box-shadow: 0 0 0 2px rgba(91, 124, 250, 0.3); z-index: 5; }
+        .puzzle-item img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+        .puzzle-item.crop-auto img { width: 100%; height: auto; object-fit: contain; } /* 长条漫用 */
+        
+        /* 12图海报 (5-2-5) */
+        .layout-poster12 .item-span-5 { grid-column: span 5; }
+        .layout-poster12 .item-span-2 { grid-column: span 2; }
+        .layout-poster12 .item-span-2-center { grid-column: 2 / span 2; } /* 让第二行的两张居中 */
         
         /* 文字叠加样式 */
-        .overlay-text { position: absolute; pointer-events: none; z-index: 10; white-space: nowrap; }
+        .overlay-text { position: absolute; pointer-events: none; z-index: 10; white-space: nowrap; font-weight: bold; }
         .watermark-overlay { position: absolute; bottom: 10px; right: 10px; color: #ffffff; pointer-events: none; z-index: 10; white-space: nowrap; }
 
         .empty-state { text-align: center; color: var(--text-sub); padding: 50px; display: none; }
@@ -180,7 +200,8 @@
             <div class="header-bar">
                 <div class="header-title">排版控制台</div>
                 <div class="header-actions">
-                    <button class="btn btn-secondary" onclick="clearPuzzleImages()">🗑️ 清空素材</button>
+                    <button class="btn btn-danger" onclick="deleteSelectedPuzzleImages()">🗑️ 删除选中</button>
+                    <button class="btn btn-secondary" onclick="clearPuzzleImages()">🧹 清空素材</button>
                     <button class="btn btn-primary" onclick="exportPuzzle()">📥 保存拼图为图片</button>
                 </div>
             </div>
@@ -195,15 +216,29 @@
 
                     <div class="control-panel-title" style="margin-top: 5px;">排版引擎</div>
                     <div class="control-row">
-                        <select id="layout-engine" onchange="renderPuzzle()">
+                        <select id="layout-engine" onchange="toggleLayoutSettings(); renderPuzzle()">
                             <option value="waterfall">动态瀑布流 (原图比例，不裁剪)</option>
+                            <option value="poster12">✨ 12图海报拼图 (5-2-5 不规则)</option>
+                            <option value="poster9">✨ 9宫格海报 (经典不规则拼接)</option>
                             <option value="grid">经典等比宫格 (整齐划一)</option>
+                            <option value="long">📜 长条漫拼接 (单列无缝)</option>
                         </select>
                     </div>
+                    
+                    <div class="control-row" id="crop-ratio-row" style="display:none;">
+                        <label>小图裁剪比例</label>
+                        <select id="crop-ratio" onchange="renderPuzzle()">
+                            <option value="auto">原图自适应</option>
+                            <option value="3:4">3:4 (竖图)</option>
+                            <option value="1:1">1:1 (正方)</option>
+                            <option value="9:16">9:16 (壁纸)</option>
+                        </select>
+                    </div>
+                    
                     <div class="control-row"><label>指定列数</label><input type="number" id="col-count" value="3" min="1" max="6" onchange="renderPuzzle()"></div>
                     <div class="control-row"><label>图片间距(px)</label><input type="number" id="img-gap" value="10" min="0" max="50" onchange="renderPuzzle()"></div>
 
-                    <!-- 序号控制区 (完整增强版) -->
+                    <!-- 序号控制区 -->
                     <div class="control-panel-title" style="margin-top: 10px;">序号设置</div>
                     <div class="control-row">
                         <label><input type="checkbox" id="show-index" checked onchange="renderPuzzle()"> 启用序号</label>
@@ -221,10 +256,11 @@
                         <label>颜色 <input type="color" id="index-color" value="#ffffff" onchange="renderPuzzle()"></label>
                         <label><input type="checkbox" id="index-stroke" onchange="renderPuzzle()"> 描边</label>
                         <label>描边色 <input type="color" id="index-stroke-color" value="#000000" onchange="renderPuzzle()"></label>
+                        <label>描边粗细 <input type="number" id="index-stroke-width" value="2" min="0" max="10" style="width:35px; padding:2px;" onchange="renderPuzzle()"></label>
                         <label><input type="checkbox" id="index-glow" onchange="renderPuzzle()"> 微光</label>
                     </div>
 
-                    <!-- 标价控制区 (完整增强版) -->
+                    <!-- 标价控制区 -->
                     <div class="control-panel-title" style="margin-top: 10px;">标价设置</div>
                     <div class="control-row">
                         <label><input type="checkbox" id="show-price" onchange="renderPuzzle()"> 启用标价</label>
@@ -243,6 +279,7 @@
                         <label>颜色 <input type="color" id="price-color" value="#ffffff" onchange="renderPuzzle()"></label>
                         <label><input type="checkbox" id="price-stroke" onchange="renderPuzzle()"> 描边</label>
                         <label>描边色 <input type="color" id="price-stroke-color" value="#000000" onchange="renderPuzzle()"></label>
+                        <label>描边粗细 <input type="number" id="price-stroke-width" value="2" min="0" max="10" style="width:35px; padding:2px;" onchange="renderPuzzle()"></label>
                         <label><input type="checkbox" id="price-glow" onchange="renderPuzzle()"> 微光</label>
                     </div>
 
@@ -254,7 +291,7 @@
                 </div>
 
                 <div class="puzzle-preview" id="puzzle-preview-area">
-                    <p style="font-size: 13px; color: #888; margin-bottom: 10px;">实时预览区（请先点击左侧“从本地相册导入图片”）</p>
+                    <p style="font-size: 13px; color: #888; margin-bottom: 10px;">实时预览区（点击图片可选中，顶部可删除选中）</p>
                     <div id="puzzle-container"></div>
                 </div>
             </div>
@@ -316,7 +353,10 @@
 
     <script>
         let state = { pCategories: [{ id: 'default_p', name: '默认P值分类' }], wCategories: [{ id: 'default_w', name: '默认词包分类' }], pCards: [], wCards: [] };
+        
+        // 拼图素材与选中状态
         let puzzleImages = [];
+        let selectedPuzzleIndices = new Set(); // 存储选中的图片索引
 
         function loadData() {
             const savedData = localStorage.getItem('pValueToolDataV3');
@@ -383,20 +423,36 @@
             });
         }
 
-        // 拼图核心渲染逻辑 (全面支持新功能)
+        function toggleLayoutSettings() {
+            const engine = document.getElementById('layout-engine').value;
+            const cropRow = document.getElementById('crop-ratio-row');
+            const colRow = document.getElementById('col-count').parentElement;
+            
+            if (engine === 'waterfall') {
+                cropRow.style.display = 'none';
+                colRow.style.display = 'flex';
+            } else if (engine === 'long') {
+                cropRow.style.display = 'none';
+                colRow.style.display = 'none';
+            } else {
+                cropRow.style.display = 'flex';
+                colRow.style.display = 'none';
+            }
+        }
+
+        // 拼图核心渲染逻辑 (大修)
         function renderPuzzle() {
             const container = document.getElementById('puzzle-container');
             const engine = document.getElementById('layout-engine').value;
-            const cols = parseInt(document.getElementById('col-count').value) || 3;
             const gap = parseInt(document.getElementById('img-gap').value) || 10;
             
-            // 获取所有文字样式参数
             const showIndex = document.getElementById('show-index').checked;
             const indexPos = document.getElementById('index-pos').value;
             const indexSize = document.getElementById('index-size').value;
             const indexColor = document.getElementById('index-color').value;
             const indexStroke = document.getElementById('index-stroke').checked;
             const indexStrokeColor = document.getElementById('index-stroke-color').value;
+            const indexStrokeWidth = document.getElementById('index-stroke-width').value;
             const indexGlow = document.getElementById('index-glow').checked;
 
             const showPrice = document.getElementById('show-price').checked;
@@ -406,6 +462,7 @@
             const priceColor = document.getElementById('price-color').value;
             const priceStroke = document.getElementById('price-stroke').checked;
             const priceStrokeColor = document.getElementById('price-stroke-color').value;
+            const priceStrokeWidth = document.getElementById('price-stroke-width').value;
             const priceGlow = document.getElementById('price-glow').checked;
 
             const showWatermark = document.getElementById('show-watermark').checked;
@@ -414,29 +471,28 @@
             const watermarkOpacity = document.getElementById('watermark-opacity').value;
             document.getElementById('wm-opacity-val').innerText = Math.round(watermarkOpacity * 100) + '%';
 
-            container.style.gap = gap + 'px';
             container.innerHTML = '';
-            
-            if (puzzleImages.length === 0) { container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 40px;">素材池为空，请点击左侧“从本地相册导入图片”。</div>'; return; }
-            container.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            if (puzzleImages.length === 0) { 
+                container.innerHTML = '<div style="text-align: center; color: #888; padding: 40px;">素材池为空，请点击左侧“从本地相册导入图片”。</div>'; 
+                return; 
+            }
 
-            // 通用的样式生成函数
-            function getTextStyle(size, color, stroke, strokeColor, glow) {
+            // 生成文字样式
+            function getTextStyle(size, color, stroke, strokeColor, strokeWidth, glow) {
                 let style = `font-size: ${size}px; color: ${color}; font-weight: bold; `;
-                // html2canvas 对 -webkit-text-stroke 支持不佳，使用 text-shadow 模拟描边
                 if (stroke) {
-                    style += `text-shadow: 1px 1px 0 ${strokeColor}, -1px -1px 0 ${strokeColor}, 1px -1px 0 ${strokeColor}, -1px 1px 0 ${strokeColor}; `;
+                    const w = parseInt(strokeWidth) || 2;
+                    style += `text-shadow: ${w}px ${w}px 0 ${strokeColor}, -${w}px -${w}px 0 ${strokeColor}, ${w}px -${w}px 0 ${strokeColor}, -${w}px ${w}px 0 ${strokeColor}; `;
                 }
                 if (glow) {
                     style += `filter: drop-shadow(0 0 5px ${color}); `;
                 }
                 if (!stroke && !glow) {
-                    style += `text-shadow: 1px 1px 3px rgba(0,0,0,0.8); `; // 默认阴影保证白色文字在浅色背景下可见
+                    style += `text-shadow: 1px 1px 3px rgba(0,0,0,0.8); `;
                 }
                 return style;
             }
 
-            // 通用的位置样式函数
             function setPosition(el, pos) {
                 el.style.top = 'auto'; el.style.bottom = 'auto'; el.style.left = 'auto'; el.style.right = 'auto'; el.style.transform = 'none';
                 if (pos === 'top-left') { el.style.top = '5px'; el.style.left = '5px'; }
@@ -447,38 +503,118 @@
                 else if (pos === 'bottom-right') { el.style.bottom = '5px'; el.style.right = '5px'; }
             }
 
-            puzzleImages.forEach((imgUrl, index) => {
-                const item = document.createElement('div'); item.className = 'puzzle-item'; item.style.aspectRatio = engine === 'grid' ? '1/1' : 'auto'; 
-                const img = document.createElement('img'); img.src = imgUrl; item.appendChild(img);
+            // 生成单张图片的DOM
+            function createPuzzleItem(imgUrl, globalIndex, isSpecialLayout = false) {
+                const item = document.createElement('div'); 
+                item.className = 'puzzle-item';
+                if (selectedPuzzleIndices.has(globalIndex)) item.classList.add('selected');
+                item.onclick = (e) => { e.stopPropagation(); if(selectedPuzzleIndices.has(globalIndex)) selectedPuzzleIndices.delete(globalIndex); else selectedPuzzleIndices.add(globalIndex); renderPuzzle(); };
 
-                // 序号叠加
+                const img = document.createElement('img'); 
+                img.src = imgUrl; 
+                item.appendChild(img);
+
+                // 应用裁剪比例
+                const cropRatio = document.getElementById('crop-ratio').value;
+                if (!isSpecialLayout && cropRatio !== 'auto') {
+                    item.style.aspectRatio = cropRatio.replace(':', '/');
+                } else if (cropRatio === 'auto') {
+                    item.style.aspectRatio = 'auto';
+                }
+
+                // 叠加文字
                 if (showIndex) {
                     const indexEl = document.createElement('div'); 
                     indexEl.className = 'overlay-text'; 
-                    indexEl.innerText = (index + 1);
-                    indexEl.style.cssText += getTextStyle(indexSize, indexColor, indexStroke, indexStrokeColor, indexGlow);
+                    indexEl.innerText = (globalIndex + 1);
+                    indexEl.style.cssText += getTextStyle(indexSize, indexColor, indexStroke, indexStrokeColor, indexStrokeWidth, indexGlow);
                     setPosition(indexEl, indexPos);
                     item.appendChild(indexEl);
                 }
-
-                // 标价叠加
                 if (showPrice && priceText) {
                     const priceEl = document.createElement('div'); 
                     priceEl.className = 'overlay-text'; 
                     priceEl.innerText = priceText;
-                    priceEl.style.cssText += getTextStyle(priceSize, priceColor, priceStroke, priceStrokeColor, priceGlow);
+                    priceEl.style.cssText += getTextStyle(priceSize, priceColor, priceStroke, priceStrokeColor, priceStrokeWidth, priceGlow);
                     setPosition(priceEl, pricePos);
                     item.appendChild(priceEl);
                 }
-
-                // 水印
                 if (showWatermark && watermarkText) {
                     const wm = document.createElement('div'); wm.className = 'watermark-overlay';
                     wm.innerText = watermarkText; wm.style.fontSize = watermarkSize + 'px'; wm.style.opacity = watermarkOpacity;
                     item.appendChild(wm);
                 }
-                container.appendChild(item);
-            });
+                return item;
+            }
+
+            // 根据排版引擎渲染
+            if (engine === 'waterfall') {
+                const cols = parseInt(document.getElementById('col-count').value) || 3;
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'puzzle-grid';
+                pageDiv.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+                pageDiv.style.gap = gap + 'px';
+                puzzleImages.forEach((img, i) => pageDiv.appendChild(createPuzzleItem(img, i)));
+                container.appendChild(pageDiv);
+            } 
+            else if (engine === 'grid') {
+                const cols = parseInt(document.getElementById('col-count').value) || 3;
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'puzzle-grid';
+                pageDiv.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+                pageDiv.style.gap = gap + 'px';
+                puzzleImages.forEach((img, i) => pageDiv.appendChild(createPuzzleItem(img, i)));
+                container.appendChild(pageDiv);
+            }
+            else if (engine === 'long') {
+                const pageDiv = document.createElement('div');
+                pageDiv.className = 'layout-long';
+                pageDiv.style.gap = '0px'; // 长条漫无缝
+                puzzleImages.forEach((img, i) => {
+                    const item = createPuzzleItem(img, i, true);
+                    item.style.aspectRatio = 'auto';
+                    item.querySelector('img').style.height = 'auto'; // 不裁剪
+                    pageDiv.appendChild(item);
+                });
+                container.appendChild(pageDiv);
+            }
+            else if (engine === 'poster9') {
+                // 9宫格强制分页
+                const pageSize = 9;
+                for (let p = 0; p < puzzleImages.length; p += pageSize) {
+                    const pageImgs = puzzleImages.slice(p, p + pageSize);
+                    const pageDiv = document.createElement('div');
+                    pageDiv.className = 'puzzle-page layout-poster9';
+                    pageDiv.style.gap = gap + 'px';
+                    pageImgs.forEach((img, idx) => pageDiv.appendChild(createPuzzleItem(img, p + idx)));
+                    container.appendChild(pageDiv);
+                }
+            }
+            else if (engine === 'poster12') {
+                // 12图强制分页，5-2-5结构
+                const pageSize = 12;
+                for (let p = 0; p < puzzleImages.length; p += pageSize) {
+                    const pageImgs = puzzleImages.slice(p, p + pageSize);
+                    const pageDiv = document.createElement('div');
+                    pageDiv.className = 'puzzle-page layout-poster12';
+                    pageDiv.style.gap = gap + 'px';
+                    
+                    pageImgs.forEach((img, idx) => {
+                        const globalIdx = p + idx;
+                        const item = createPuzzleItem(img, globalIdx);
+                        // 应用 5-2-5 布局逻辑
+                        if (idx < 5) {
+                            item.style.gridColumn = 'span 1'; // 第一行5个，占1列 (总共6列)
+                        } else if (idx < 7) {
+                            item.style.gridColumn = 'span 3'; // 第二行2个，各占3列 (总共6列)
+                        } else {
+                            item.style.gridColumn = 'span 1'; // 第三行5个，占1列
+                        }
+                        pageDiv.appendChild(item);
+                    });
+                    container.appendChild(pageDiv);
+                }
+            }
         }
 
         function handleLocalImageUpload(event) {
@@ -495,14 +631,30 @@
             });
         }
 
-        function clearPuzzleImages() { if(confirm('确定要清空当前拼图的所有图片素材吗？')) { puzzleImages = []; renderPuzzle(); } }
+        function clearPuzzleImages() { 
+            if(confirm('确定要清空当前拼图的所有图片素材吗？')) { 
+                puzzleImages = []; 
+                selectedPuzzleIndices.clear();
+                renderPuzzle(); 
+            } 
+        }
+
+        function deleteSelectedPuzzleImages() {
+            if (selectedPuzzleIndices.size === 0) return alert('请先在右侧点击选中要删除的图片');
+            if (!confirm(`确定要删除选中的 ${selectedPuzzleIndices.size} 张图片吗？`)) return;
+            
+            // 过滤出未被选中的图片
+            puzzleImages = puzzleImages.filter((_, index) => !selectedPuzzleIndices.has(index));
+            selectedPuzzleIndices.clear();
+            renderPuzzle();
+        }
 
         function switchView(viewName, event) {
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
             if(event && event.currentTarget) event.currentTarget.classList.add('active');
             document.querySelectorAll('.view-container').forEach(el => el.style.display = 'none');
             document.getElementById('view-' + viewName).style.display = 'block';
-            if (viewName === '拼图排版') { document.getElementById('view-拼图排版').style.display = 'flex'; renderPuzzle(); }
+            if (viewName === '拼图排版') { document.getElementById('view-拼图排版').style.display = 'flex'; toggleLayoutSettings(); renderPuzzle(); }
             else if (viewName === '数据管理') { document.getElementById('view-数据管理').style.display = 'block'; }
         }
 
@@ -609,7 +761,10 @@
         function exportPuzzle() {
             const container = document.getElementById('puzzle-container');
             if (container.children.length === 0 || container.innerText.includes('素材池为空')) return alert('拼图区域为空，请先导入本地图片');
-            html2canvas(container, { useCORS: true, scale: 2 }).then(canvas => { const link = document.createElement('a'); link.download = '拼图作品_' + new Date().getTime() + '.png'; link.href = canvas.toDataURL('image/png'); link.click(); }).catch(err => { console.error(err); alert('导出失败，未知错误。'); });
+            html2canvas(container, { useCORS: true, scale: 2 }).then(canvas => { 
+                const link = document.createElement('a'); link.download = '拼图作品_' + new Date().getTime() + '.png'; 
+                link.href = canvas.toDataURL('image/png'); link.click(); 
+            }).catch(err => { console.error(err); alert('导出失败，未知错误。'); });
         }
 
         function exportData() {
