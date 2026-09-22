@@ -133,16 +133,13 @@
         .puzzle-item { position: relative; background: #f0f0f0; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid transparent; transition: 0.1s; }
         .puzzle-item.selected { border: 3px solid var(--primary); box-shadow: 0 0 0 2px rgba(91, 124, 250, 0.3); z-index: 5; }
         .puzzle-item img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
-        .puzzle-item.crop-auto img { width: 100%; height: auto; object-fit: contain; } /* 长条漫用 */
-        
-        /* 12图海报 (5-2-5) */
-        .layout-poster12 .item-span-5 { grid-column: span 5; }
-        .layout-poster12 .item-span-2 { grid-column: span 2; }
-        .layout-poster12 .item-span-2-center { grid-column: 2 / span 2; }
+        .puzzle-item.crop-auto img { width: 100%; height: auto; object-fit: contain; } 
         
         /* 文字叠加样式 */
         .overlay-text { position: absolute; pointer-events: none; z-index: 10; white-space: nowrap; font-weight: bold; }
-        .watermark-overlay { position: absolute; bottom: 10px; right: 10px; color: #ffffff; pointer-events: none; z-index: 10; white-space: nowrap; }
+        
+        /* 水印图片样式 (移除了原来的固定max-width，改由JS动态控制) */
+        .watermark-img { position: absolute; z-index: 10; pointer-events: none; object-fit: contain; }
 
         .empty-state { text-align: center; color: var(--text-sub); padding: 50px; display: none; }
         
@@ -283,11 +280,41 @@
                         <label><input type="checkbox" id="price-glow" onchange="renderPuzzle()"> 微光</label>
                     </div>
 
+                    <!-- 全图水印附着 (全新升级) -->
                     <div class="control-panel-title" style="margin-top: 10px;">全图水印附着</div>
                     <div class="control-row"><label><input type="checkbox" id="show-watermark" onchange="renderPuzzle()"> 开启水印</label></div>
-                    <div class="control-row"><input type="text" id="watermark-text" placeholder="输入水印文字" value="© 我的灵感库" style="width: 100%; padding: 6px;" onchange="renderPuzzle()"></div>
-                    <div class="control-row"><label>水印大小</label><input type="number" id="watermark-size" value="16" min="8" max="60" onchange="renderPuzzle()"></div>
-                    <div class="control-row"><label>水印透明度</label><input type="range" id="watermark-opacity" min="0" max="1" step="0.1" value="0.6" onchange="renderPuzzle()"><span id="wm-opacity-val" style="margin-left: 5px; width: 30px;">60%</span></div>
+                    <div class="control-row">
+                        <label class="btn btn-secondary" style="width:100%; font-size:12px; padding:6px; cursor:pointer;">
+                            📁 导入水印图片
+                            <input type="file" id="watermark-upload" accept="image/*" onchange="handleWatermarkUpload(event)" style="display:none;">
+                        </label>
+                    </div>
+                    <div class="control-row" style="font-size:12px; color:#888;">
+                        <span id="watermark-status">未导入水印</span>
+                    </div>
+                    <button class="btn btn-primary" id="btn-place-watermark" onclick="startWatermarkPlacement()" style="width:100%; font-size:12px; padding:6px; display:none;">📍 点击此处，然后去右侧点选位置</button>
+                    
+                    <!-- 新增：水印大小和透明度 -->
+                    <div class="control-row">
+                        <label>水印大小</label>
+                        <input type="range" id="watermark-size" min="5" max="100" value="20" oninput="renderPuzzle()">
+                        <span id="wm-size-val" style="margin-left:5px; width:35px; font-size:12px;">20%</span>
+                    </div>
+                    <div class="control-row">
+                        <label>水印透明度</label>
+                        <input type="range" id="watermark-opacity" min="0" max="1" step="0.1" value="0.8" oninput="renderPuzzle()">
+                        <span id="wm-opacity-val" style="margin-left:5px; width:35px; font-size:12px;">80%</span>
+                    </div>
+
+                    <!-- 新增：水印操作按钮 -->
+                    <div class="control-row" style="justify-content: flex-start; gap: 8px; margin-top:5px;">
+                        <button class="btn btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="deleteWatermark()">🗑️ 删除水印</button>
+                        <button class="btn btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="resetWatermarkPos()">🔄 重置位置</button>
+                    </div>
+
+                    <div class="control-row" style="font-size:12px; color:#888; line-height:1.4; margin-top:5px;">
+                        💡 提示：导入水印后，点击上方按钮，然后在右侧任意图片上点击你想安放的位置，即可全局同步坐标！
+                    </div>
                 </div>
 
                 <div class="puzzle-preview" id="puzzle-preview-area">
@@ -355,6 +382,13 @@
         let state = { pCategories: [{ id: 'default_p', name: '默认P值分类' }], wCategories: [{ id: 'default_w', name: '默认词包分类' }], pCards: [], wCards: [] };
         let puzzleImages = [];
         let selectedPuzzleIndices = new Set();
+        
+        // 水印相关状态
+        let watermarkImage = ''; 
+        let watermarkPos = { x: '90%', y: '90%' }; // 默认右下角
+        let watermarkSize = 20; // 默认大小20%
+        let watermarkOpacity = 0.8; // 默认透明度80%
+        let isPlacingWatermark = false; 
 
         function loadData() {
             const savedData = localStorage.getItem('pValueToolDataV3');
@@ -425,27 +459,57 @@
             const engine = document.getElementById('layout-engine').value;
             const cropRow = document.getElementById('crop-ratio-row');
             const colRow = document.getElementById('col-count-row');
-            
             if (engine === 'waterfall') { cropRow.style.display = 'none'; colRow.style.display = 'flex'; }
             else if (engine === 'long') { cropRow.style.display = 'none'; colRow.style.display = 'none'; }
             else { cropRow.style.display = 'flex'; colRow.style.display = 'none'; }
         }
 
-        // --- 修复核心：getTextStyle ---
+        // --- 水印功能核心逻辑 ---
+        function handleWatermarkUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                watermarkImage = e.target.result;
+                document.getElementById('watermark-status').innerText = '✅ 已导入水印图';
+                document.getElementById('btn-place-watermark').style.display = 'block';
+                alert('水印导入成功！请点击“📍 点击此处，然后去右侧点选位置”按钮，然后在右侧任意图片上点击你想要放置水印的位置。');
+                renderPuzzle();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function startWatermarkPlacement() {
+            if (!watermarkImage) return alert('请先导入水印图片！');
+            isPlacingWatermark = true;
+            alert('请现在去右侧预览区，点击任意图片上的位置来放置水印。');
+        }
+
+        function deleteWatermark() {
+            if (!watermarkImage) return;
+            if (confirm('确定要删除当前水印图片吗？')) {
+                watermarkImage = '';
+                document.getElementById('watermark-status').innerText = '未导入水印';
+                document.getElementById('btn-place-watermark').style.display = 'none';
+                renderPuzzle();
+            }
+        }
+
+        function resetWatermarkPos() {
+            watermarkPos = { x: '90%', y: '90%' };
+            document.getElementById('watermark-status').innerText = '位置已重置到右下角';
+            renderPuzzle();
+        }
+
+        // --- 核心渲染 ---
         function getTextStyle(size, color, stroke, strokeColor, strokeWidth, glow) {
             let style = `font-size: ${size}px; color: ${color}; font-weight: bold; `;
-            
-            // 使用真正的CSS描边，而不是重叠阴影
             if (stroke) {
                 const w = parseInt(strokeWidth) || 2;
                 style += `-webkit-text-stroke: ${w}px ${strokeColor}; paint-order: stroke fill; `;
             }
-            if (glow) {
-                style += `filter: drop-shadow(0 0 5px ${color}); `;
-            }
-            if (!stroke && !glow) {
-                style += `text-shadow: 1px 1px 3px rgba(0,0,0,0.8); `;
-            }
+            if (glow) { style += `filter: drop-shadow(0 0 5px ${color}); `; }
+            if (!stroke && !glow) { style += `text-shadow: 1px 1px 3px rgba(0,0,0,0.8); `; }
             return style;
         }
 
@@ -474,9 +538,11 @@
             const priceGlow = document.getElementById('price-glow').checked;
 
             const showWatermark = document.getElementById('show-watermark').checked;
-            const watermarkText = document.getElementById('watermark-text').value;
-            const watermarkSize = document.getElementById('watermark-size').value;
-            const watermarkOpacity = document.getElementById('watermark-opacity').value;
+            
+            // 获取水印大小和透明度
+            watermarkSize = parseInt(document.getElementById('watermark-size').value);
+            watermarkOpacity = parseFloat(document.getElementById('watermark-opacity').value);
+            document.getElementById('wm-size-val').innerText = watermarkSize + '%';
             document.getElementById('wm-opacity-val').innerText = Math.round(watermarkOpacity * 100) + '%';
 
             container.innerHTML = '';
@@ -499,7 +565,23 @@
                 const item = document.createElement('div'); 
                 item.className = 'puzzle-item';
                 if (selectedPuzzleIndices.has(globalIndex)) item.classList.add('selected');
-                item.onclick = (e) => { e.stopPropagation(); if(selectedPuzzleIndices.has(globalIndex)) selectedPuzzleIndices.delete(globalIndex); else selectedPuzzleIndices.add(globalIndex); renderPuzzle(); };
+                
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    if (isPlacingWatermark) {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const xPercent = ((e.clientX - rect.left) / rect.width) * 100;
+                        const yPercent = ((e.clientY - rect.top) / rect.height) * 100;
+                        watermarkPos = { x: xPercent + '%', y: yPercent + '%' };
+                        isPlacingWatermark = false;
+                        document.getElementById('watermark-status').innerText = `坐标已设定: (${Math.round(xPercent)}%, ${Math.round(yPercent)}%)`;
+                        renderPuzzle();
+                    } else {
+                        if(selectedPuzzleIndices.has(globalIndex)) selectedPuzzleIndices.delete(globalIndex); 
+                        else selectedPuzzleIndices.add(globalIndex); 
+                        renderPuzzle();
+                    }
+                };
 
                 const img = document.createElement('img'); 
                 img.src = imgUrl; 
@@ -528,11 +610,21 @@
                     setPosition(priceEl, pricePos);
                     item.appendChild(priceEl);
                 }
-                if (showWatermark && watermarkText) {
-                    const wm = document.createElement('div'); wm.className = 'watermark-overlay';
-                    wm.innerText = watermarkText; wm.style.fontSize = watermarkSize + 'px'; wm.style.opacity = watermarkOpacity;
+                
+                // 图片水印渲染逻辑
+                if (showWatermark && watermarkImage) {
+                    const wm = document.createElement('img');
+                    wm.src = watermarkImage;
+                    wm.className = 'watermark-img';
+                    wm.style.left = watermarkPos.x;
+                    wm.style.top = watermarkPos.y;
+                    wm.style.transform = 'translate(-50%, -50%)'; 
+                    wm.style.width = watermarkSize + '%'; // 应用大小
+                    wm.style.height = 'auto';
+                    wm.style.opacity = watermarkOpacity; // 应用透明度
                     item.appendChild(wm);
                 }
+                
                 return item;
             }
 
