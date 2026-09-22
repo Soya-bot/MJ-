@@ -19,10 +19,19 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
         
-        body { display: flex; height: 100vh; background-color: var(--bg); overflow: hidden; }
+        body { display: flex; height: 100vh; background-color: var(--bg); overflow: hidden; position: relative; }
+
+        /* 侧边栏折叠遮罩层 (移动端) */
+        .sidebar-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 999; display: none; }
+        .sidebar-overlay.active { display: block; }
+
+        /* 菜单切换按钮 */
+        .menu-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 1001; background: var(--primary); color: #fff; border: none; border-radius: 6px; padding: 8px 12px; font-size: 16px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
 
         /* 左侧边栏 */
-        .sidebar { width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 0; overflow-y: auto; }
+        .sidebar { width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 0; overflow-y: auto; transition: transform 0.3s ease; z-index: 1000; flex-shrink: 0; }
+        .sidebar.hidden { transform: translateX(-100%); margin-right: -260px; /* 配合flex布局隐藏 */ }
+        
         .sidebar h2 { font-size: 16px; padding: 0 20px 20px; color: var(--text-main); font-weight: bold; }
         .menu-item { padding: 12px 20px; font-size: 14px; color: var(--text-main); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
         .menu-item:hover { background: #f3f4f6; }
@@ -36,7 +45,7 @@
         .category-item.active { color: var(--primary); font-weight: bold; }
 
         /* 右侧主内容 */
-        .main-content { flex: 1; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; }
+        .main-content { flex: 1; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; transition: margin-left 0.3s ease; }
         .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .header-title { font-size: 20px; font-weight: bold; color: var(--text-main); }
         .header-actions { display: flex; gap: 10px; }
@@ -100,7 +109,7 @@
 
         /* ============ 拼图排版控制台专用样式 ============ */
         .puzzle-layout { display: flex; flex: 1; gap: 20px; overflow: hidden; }
-        .puzzle-controls { width: 360px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+        .puzzle-controls { width: 360px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex-shrink: 0; }
         .puzzle-preview { flex: 1; background: #e9ecef; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 20px; overflow-y: auto; }
         .control-panel-title { font-size: 14px; font-weight: bold; margin-top: 5px; margin-bottom: 5px; color: var(--text-main); border-bottom: 1px solid var(--border); padding-bottom: 5px; }
         
@@ -138,7 +147,7 @@
         /* 文字叠加样式 */
         .overlay-text { position: absolute; pointer-events: none; z-index: 10; white-space: nowrap; font-weight: bold; }
         
-        /* 水印图片样式 (移除原有的限制，允许拖拽和铺满) */
+        /* 水印图片样式 */
         .watermark-img { position: absolute; z-index: 10; object-fit: fill; user-select: none; -webkit-user-drag: none; }
 
         .empty-state { text-align: center; color: var(--text-sub); padding: 50px; display: none; }
@@ -149,11 +158,49 @@
         .data-actions { display: flex; gap: 20px; justify-content: center; }
         .btn-export { background: #5b7cfa; color: #fff; padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 15px; }
         .btn-import { background: #10b981; color: #fff; padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 15px; }
+
+        /* ============ 移动端适配 (响应式侧栏) ============ */
+        @media (max-width: 768px) {
+            body { display: block; }
+            
+            /* 侧边栏变为固定的侧滑抽屉 */
+            .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: 280px; transform: translateX(-100%); box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+            .sidebar.active { transform: translateX(0); }
+            .sidebar.hidden { transform: translateX(-100%); margin-right: 0; }
+
+            /* 显示汉堡菜单按钮 */
+            .menu-toggle { display: block; }
+            
+            /* 主内容区占据满宽 */
+            .main-content { width: 100%; padding: 15px; padding-top: 60px; /* 留出菜单按钮的空间 */ }
+            
+            /* 标题栏适配 */
+            .header-bar { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .header-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+            .header-actions .btn { flex: 1; white-space: nowrap; }
+            
+            /* 拼图控制台改为上下布局 */
+            .puzzle-layout { flex-direction: column; overflow-y: auto; }
+            .puzzle-controls { width: 100%; max-height: none; }
+            .puzzle-preview { width: 100%; min-height: 400px; }
+            
+            /* 卡片网格单列 */
+            .cards-grid { grid-template-columns: 1fr; }
+            
+            /* 模态框宽度适应 */
+            .modal { width: 95%; max-width: 95%; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
+    <!-- 移动端侧栏遮罩 -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    
+    <!-- 菜单切换按钮 -->
+    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">☰ 菜单</button>
+
+    <div class="sidebar" id="sidebar">
         <h2>管理中心</h2>
         <div class="menu-item active" onclick="switchView('p库', event)"><i>📁</i> P值库</div>
         <div class="menu-item" onclick="switchView('词包库', event)"><i>🖼️</i> 词包库</div>
@@ -235,7 +282,6 @@
                     <div class="control-row" id="col-count-row"><label>指定列数</label><input type="number" id="col-count" value="3" min="1" max="6" onchange="renderPuzzle()"></div>
                     <div class="control-row"><label>图片间距(px)</label><input type="number" id="img-gap" value="10" min="0" max="50" onchange="renderPuzzle()"></div>
 
-                    <!-- 序号控制区 -->
                     <div class="control-panel-title" style="margin-top: 10px;">序号设置</div>
                     <div class="control-row">
                         <label><input type="checkbox" id="show-index" checked onchange="renderPuzzle()"> 启用序号</label>
@@ -257,7 +303,6 @@
                         <label><input type="checkbox" id="index-glow" onchange="renderPuzzle()"> 微光</label>
                     </div>
 
-                    <!-- 标价控制区 -->
                     <div class="control-panel-title" style="margin-top: 10px;">标价设置</div>
                     <div class="control-row">
                         <label><input type="checkbox" id="show-price" onchange="renderPuzzle()"> 启用标价</label>
@@ -280,7 +325,6 @@
                         <label><input type="checkbox" id="price-glow" onchange="renderPuzzle()"> 微光</label>
                     </div>
 
-                    <!-- 全图水印附着 (全新拖拽版本) -->
                     <div class="control-panel-title" style="margin-top: 10px;">全图水印附着</div>
                     <div class="control-row"><label><input type="checkbox" id="show-watermark" checked onchange="renderPuzzle()"> 开启水印</label></div>
                     <div class="control-row">
@@ -293,7 +337,6 @@
                         <span id="watermark-status">未导入水印</span>
                     </div>
                     
-                    <!-- 水印宽高与透明度 -->
                     <div class="control-row">
                         <label>水印宽度</label>
                         <input type="range" id="watermark-width" min="1" max="100" value="20" oninput="updateWatermarkStyle()">
@@ -310,7 +353,6 @@
                         <span id="wm-opacity-val" style="margin-left:5px; width:35px; font-size:12px;">80%</span>
                     </div>
 
-                    <!-- 水印操作按钮 -->
                     <div class="control-row" style="justify-content: flex-start; gap: 8px; margin-top:5px;">
                         <button class="btn btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="deleteWatermark()">🗑️ 删除水印</button>
                         <button class="btn btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="resetWatermarkPos()">🔄 重置位置</button>
@@ -341,7 +383,7 @@
         </div>
     </div>
 
-    <!-- 模态框：添加/编辑 P值 -->
+    <!-- 模态框部分省略，保持原样 -->
     <div class="modal-overlay" id="cardModal">
         <div class="modal">
             <h3 id="modal-title">添加 P 值</h3>
@@ -357,7 +399,6 @@
         </div>
     </div>
 
-    <!-- 模态框：创建/编辑 词包 -->
     <div class="modal-overlay" id="wordModal">
         <div class="modal">
             <h3 id="word-modal-title">创建词包</h3>
@@ -372,7 +413,6 @@
         </div>
     </div>
 
-    <!-- 模态框：新增分类 -->
     <div class="modal-overlay" id="catModal">
         <div class="modal" style="width: 350px;">
             <h3 id="cat-modal-title">新增分类</h3>
@@ -383,13 +423,48 @@
     </div>
 
     <script>
+        // --- 响应式侧栏控制逻辑 ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('active');
+            // 如果是桌面端折叠（无遮罩），或者移动端打开
+            if (window.innerWidth <= 768) {
+                if (sidebar.classList.contains('active')) overlay.classList.add('active');
+                else overlay.classList.remove('active');
+            } else {
+                // 桌面端
+                if (sidebar.classList.contains('active')) sidebar.classList.remove('hidden');
+                else sidebar.classList.add('hidden');
+            }
+        }
+
+        // 初始化：如果在桌面端，侧栏默认显示（移除hidden）
+        // 如果在移动端，侧栏默认隐藏（移除active）
+        window.addEventListener('resize', () => {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+                // 确保桌面端不会被隐藏
+            } else {
+                sidebar.classList.remove('hidden');
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        });
+
+        // 页面加载时初始化侧栏状态
+        window.dispatchEvent(new Event('resize'));
+
+        // --- 原有逻辑 ---
         let state = { pCategories: [{ id: 'default_p', name: '默认P值分类' }], wCategories: [{ id: 'default_w', name: '默认词包分类' }], pCards: [], wCards: [] };
         let puzzleImages = [];
         let selectedPuzzleIndices = new Set();
         
-        // 水印相关状态
         let watermarkImage = ''; 
-        let watermarkPos = { x: '90%', y: '90%' }; // 默认右下角
+        let watermarkPos = { x: '90%', y: '90%' }; 
         let watermarkWidth = 20; 
         let watermarkHeight = 20; 
         let watermarkOpacity = 0.8; 
@@ -468,7 +543,6 @@
             else { cropRow.style.display = 'flex'; colRow.style.display = 'none'; }
         }
 
-        // --- 水印功能核心逻辑 ---
         function handleWatermarkUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -490,7 +564,6 @@
             document.getElementById('wm-height-val').innerText = watermarkHeight + '%';
             document.getElementById('wm-opacity-val').innerText = Math.round(watermarkOpacity * 100) + '%';
             
-            // 实时更新现有水印样式，无需全量重绘
             document.querySelectorAll('.watermark-img').forEach(el => {
                 el.style.width = watermarkWidth + '%';
                 el.style.height = watermarkHeight + '%';
@@ -513,7 +586,6 @@
             renderPuzzle();
         }
 
-        // --- 核心渲染 ---
         function getTextStyle(size, color, stroke, strokeColor, strokeWidth, glow) {
             let style = `font-size: ${size}px; color: ${color}; font-weight: bold; `;
             if (stroke) {
@@ -577,11 +649,11 @@
                 wm.style.width = watermarkWidth + '%';
                 wm.style.height = watermarkHeight + '%';
                 wm.style.opacity = watermarkOpacity;
-                wm.style.pointerEvents = 'auto'; // 开启鼠标交互
+                wm.style.pointerEvents = 'auto'; 
                 wm.style.cursor = 'move';
                 
                 wm.onmousedown = (e) => {
-                    e.stopPropagation(); // 阻止触发图片选中的click
+                    e.stopPropagation(); 
                     e.preventDefault();
                     
                     const rect = item.getBoundingClientRect();
@@ -604,7 +676,6 @@
                         watermarkPos.x = newX + '%';
                         watermarkPos.y = newY + '%';
                         
-                        // 实时更新所有水印，不重绘整个界面
                         document.querySelectorAll('.watermark-img').forEach(el => {
                             el.style.left = watermarkPos.x;
                             el.style.top = watermarkPos.y;
@@ -663,7 +734,6 @@
                     item.appendChild(priceEl);
                 }
                 
-                // 图片水印渲染
                 if (showWatermark && watermarkImage) {
                     item.appendChild(createWatermark(item));
                 }
@@ -770,6 +840,12 @@
             document.getElementById('view-' + viewName).style.display = 'block';
             if (viewName === '拼图排版') { document.getElementById('view-拼图排版').style.display = 'flex'; toggleLayoutSettings(); renderPuzzle(); }
             else if (viewName === '数据管理') { document.getElementById('view-数据管理').style.display = 'block'; }
+            
+            // 移动端点击菜单后自动收起
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('active');
+                document.getElementById('sidebarOverlay').classList.remove('active');
+            }
         }
 
         function openCardModal(id = null) { 
